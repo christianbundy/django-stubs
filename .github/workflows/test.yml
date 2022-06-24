@@ -46,6 +46,27 @@ jobs:
       - name: Run tests
         run: pytest
 
+  paranoia:
+    runs-on: ubunto-latest
+    steps:
+      - run: |
+        docker build -f - . << EOF
+        FROM python:3.10
+
+        RUN apt-get update && apt-get install git
+
+        RUN git clone https://github.com/ljodal/django-stubs.git
+
+        WORKDIR ./django-stubs
+
+        RUN git checkout 1ec8c44946c3de25cf88751dcd34c0ba58770ccf
+
+        RUN pip install -U pip setuptools wheel \
+            && pip install -r ./requirements.txt
+
+        RUN pytest --mypy-ini-file=mypy.ini -k from_queryset_custom_auth_user_model
+        EOF
+
   typecheck:
     runs-on: ubuntu-latest
     strategy:
